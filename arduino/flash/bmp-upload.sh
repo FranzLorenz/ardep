@@ -11,6 +11,8 @@
 # at the user_sketch address and programmed with GDB `load`, then the target is
 # reset so the loader picks up the new sketch.
 #
+# SPDX-FileCopyrightText: Copyright (C) 2026 Frickly Systems GmbH
+#
 # SPDX-License-Identifier: Apache-2.0
 
 set -euo pipefail

@@ -13,6 +13,8 @@
  * best-effort (no bus partner needed); failures are ignored so the loop keeps
  * blinking.
  *
+ * SPDX-FileCopyrightText: Copyright (C) 2026 Frickly Systems GmbH
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
 

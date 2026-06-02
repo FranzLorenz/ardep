@@ -1,6 +1,8 @@
 /*
  * Arduino Core for Zephyr - variant header for the ARDEP board.
  *
+ * SPDX-FileCopyrightText: Copyright (C) 2026 Frickly Systems GmbH
+ *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Legacy pin-name defines. SPI maps to the classic Arduino-R3 positions

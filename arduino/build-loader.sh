@@ -12,6 +12,8 @@
 # Run from the ArduinoCore-zephyr core root (where platform.txt lives), with
 # the venv available. Override paths via env if your layout differs.
 #
+# SPDX-FileCopyrightText: Copyright (C) 2026 Frickly Systems GmbH
+#
 # SPDX-License-Identifier: Apache-2.0
 
 set -euo pipefail

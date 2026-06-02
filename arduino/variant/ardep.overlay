@@ -1,6 +1,8 @@
 /*
  * Arduino Core for Zephyr - board variant overlay for the ARDEP board.
  *
+ * SPDX-FileCopyrightText: Copyright (C) 2026 Frickly Systems GmbH
+ *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Physical Arduino-R3-header pin mapping for the Mercedes-Benz ARDEP

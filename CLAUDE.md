@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2026 Frickly Systems GmbH
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Claude — ARDEP fork (Arduino support)
 
 This is a fork of [mercedes-benz/ardep](https://github.com/mercedes-benz/ardep).

@@ -5,6 +5,8 @@
  * The burst count identifies the sketch (blink = 1, peripherals = 3), so you
  * can tell at a glance which sketch is running on the board.
  *
+ * SPDX-FileCopyrightText: Copyright (C) 2026 Frickly Systems GmbH
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
 

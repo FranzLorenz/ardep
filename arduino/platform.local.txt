@@ -5,6 +5,8 @@
 # -p <gdb-port>` and the Arduino IDE "Upload" button flash the sketch to the
 # ARDEP user_sketch partition via the on-board BMP.
 #
+# SPDX-FileCopyrightText: Copyright (C) 2026 Frickly Systems GmbH
+#
 # SPDX-License-Identifier: Apache-2.0
 
 tools.bmp.upload.params.verbose=

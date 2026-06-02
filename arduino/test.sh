@@ -4,6 +4,8 @@
 # GREEN = the loader builds AND the blink sketch compiles against it.
 # Run this before every commit; CI runs the same.
 #
+# SPDX-FileCopyrightText: Copyright (C) 2026 Frickly Systems GmbH
+#
 # SPDX-License-Identifier: Apache-2.0
 
 set -euo pipefail

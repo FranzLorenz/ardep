@@ -17,6 +17,8 @@
 #     ~/.../build/ardep_stm32g474xx/zephyr/zephyr.elf \
 #     ~/.../build/arduino-git.zephyr.ardep/blink.ino.elf-zsk.bin
 #
+# SPDX-FileCopyrightText: Copyright (C) 2026 Frickly Systems GmbH
+#
 # SPDX-License-Identifier: Apache-2.0
 
 set -euo pipefail
