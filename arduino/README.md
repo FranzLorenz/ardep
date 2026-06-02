@@ -138,8 +138,9 @@ GDB `load` over the BMP, and resets.
 - [x] Blink sketch compiled as LLEXT, loaded, **verified blinking (red LED, 1 Hz)**
 - [x] `boards.txt` entry wired for arduino-cli (`arduino-git:zephyr:ardep`)
 - [x] Peripherals: **Wire (I2C2, D18/D19), SPI (spi4, D11–13), analogRead
-      (A0–A5), analogWrite/PWM (D4–D9), Serial (usart3, D0/D1)** — compile green
-      and boot without fault on hardware (peripherals example blinks in 3-bursts)
+      (A0–A5), analogWrite/PWM (D4–D9), DAC (DAC0/DAC1 = PA4/PA5), CAN
+      (can_a/can_b, onboard FDCAN), Serial (usart3, D0/D1)** — compile green and
+      boot without fault on hardware (peripherals example blinks in 3-bursts)
 - [x] **IDE/CLI auto-upload** via BMP — `arduino-cli upload` and the Arduino IDE
       "Upload" button flash the sketch to `user_sketch` and reset (verified on hw)
 
@@ -153,6 +154,8 @@ GDB `load` over the BMP, and resets.
 | D11/D12/D13 | PE6/PE5/PE2 | SPI (spi4 MOSI/MISO/SCK) |
 | D18/D19 | PA8/PA9 | Wire (i2c2 SDA/SCL) |
 | A0–A5 | PA1/PA7/PB0/PB13/PB14/PB12 | analogRead (adc2/3/4) |
+| DAC0/DAC1 | PA4/PA5 | analogWrite(DAC0/DAC1, …) — internal pads |
+| CAN | PB5/PB6 (can_a), PD0/PD1 (can_b) | CAN library (onboard FDCAN + transceivers) |
 
 ## Next build-out (deliberately deferred)
 

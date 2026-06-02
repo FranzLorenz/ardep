@@ -199,5 +199,22 @@
 		       <&pwm4 4 PWM_HZ(500) PWM_POLARITY_NORMAL>,  /* D7 TIM4_CH4 */
 		       <&pwm8 1 PWM_HZ(500) PWM_POLARITY_NORMAL>,  /* D8 TIM8_CH1 */
 		       <&pwm8 2 PWM_HZ(500) PWM_POLARITY_NORMAL>;  /* D9 TIM8_CH2 */
+
+		/*
+		 * CAN — ARDEP's signature feature. Both onboard FDCAN buses are
+		 * enabled by the board (can.dtsi) with ATA6561 transceivers:
+		 * can_a = fdcan2 (PB5/PB6), can_b = fdcan1 (PD0/PD1).
+		 */
+		cans = <&can_a>, <&can_b>;
+
+		/*
+		 * DAC — dac1 is enabled by the board on PA4 (OUT1) / PA5 (OUT2).
+		 * These are internal pads, not Arduino header pins.
+		 */
+		dac = <&dac1>;
+		dac-channels = <1>, <2>;
+		dac-resolution = <12>;
+		dac-pin-gpios = <&gpioa 4 0>,  /* DAC1_OUT1 PA4 */
+				<&gpioa 5 0>;  /* DAC1_OUT2 PA5 */
 	};
 };

@@ -92,10 +92,10 @@ at the end. `flash/backup.jlink` is kept for v1 / external J-Link probes only.
 - ✅ Blink sketch compiles end-to-end to a loadable LLEXT
 - ✅ **Flashed + verified on real hardware via on-board BMP — red LED blinks at 1 Hz**
 - ✅ Peripherals: Wire (i2c2), SPI (spi4), analogRead (A0–A5), analogWrite/PWM
-  (D4–D9), Serial (usart3) — compile green + boot without fault on hardware
+  (D4–D9), DAC (DAC0/DAC1), CAN (can_a/can_b), Serial (usart3) — compile green +
+  boot without fault on hardware (full set)
 - ✅ IDE/CLI auto-upload via BMP (`arduino-cli upload` / IDE Upload button) —
   custom `bmp` tool (platform.local.txt + bmp-upload.sh), verified on hardware
-- ⏳ CAN, DAC
 
 ## Layout
 
