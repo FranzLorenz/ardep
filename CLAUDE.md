@@ -91,7 +91,9 @@ at the end. `flash/backup.jlink` is kept for v1 / external J-Link probes only.
 - ✅ Loader builds: 169 KB flash (32%), RAM 91% (tight — trim for big sketches)
 - ✅ Blink sketch compiles end-to-end to a loadable LLEXT
 - ✅ **Flashed + verified on real hardware via on-board BMP — red LED blinks at 1 Hz**
-- ⏳ Peripheral build-out: ADC (A0–A5 span adc1–4), PWM, I2C, SPI, CAN
+- ✅ Peripherals: Wire (i2c2), SPI (spi4), analogRead (A0–A5), analogWrite/PWM
+  (D4–D9), Serial (usart3) — compile green + boot without fault on hardware
+- ⏳ CAN, DAC
 - ⏳ IDE/CLI auto-upload recipe (upload.address/tool in boards.txt)
 
 ## Layout

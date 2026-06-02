@@ -123,8 +123,22 @@ It reads the whole 512K flash to `~/ardep-flash-backup/backup.bin` first
 - [x] Loader flashed + verified on real hardware (via on-board BMP, USB-C)
 - [x] Blink sketch compiled as LLEXT, loaded, **verified blinking (red LED, 1 Hz)**
 - [x] `boards.txt` entry wired for arduino-cli (`arduino-git:zephyr:ardep`)
+- [x] Peripherals: **Wire (I2C2, D18/D19), SPI (spi4, D11–13), analogRead
+      (A0–A5), analogWrite/PWM (D4–D9), Serial (usart3, D0/D1)** — compile green
+      and boot without fault on hardware (peripherals example blinks in 3-bursts)
 - [ ] IDE/CLI auto-upload recipe (`upload.address`/tool in boards.txt) — sketch
       currently flashed via `flash/flash-bmp.sh`
+
+### Peripheral pin map
+
+| Arduino | Pin | Peripheral |
+|---|---|---|
+| D0/D1 | PD9/PD8 | Serial (usart3 RX/TX) |
+| D4–D7 | PD12–PD15 | analogWrite (TIM4_CH1–4) |
+| D8/D9 | PC6/PC7 | analogWrite (TIM8_CH1/2) |
+| D11/D12/D13 | PE6/PE5/PE2 | SPI (spi4 MOSI/MISO/SCK) |
+| D18/D19 | PA8/PA9 | Wire (i2c2 SDA/SCL) |
+| A0–A5 | PA1/PA7/PB0/PB13/PB14/PB12 | analogRead (adc2/3/4) |
 
 ## Next build-out (deliberately deferred)
 
