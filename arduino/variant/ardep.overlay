@@ -16,6 +16,8 @@
  * CONFIG_BOOTLOADER_MCUBOOT in ardep.conf so the loader links at flash base.
  */
 
+#include <zephyr/dt-bindings/pwm/pwm.h>
+
 /delete-node/ &boot_partition;
 /delete-node/ &slot0_partition;
 /delete-node/ &slot1_partition;
@@ -50,6 +52,53 @@
 	pinctrl-0 = <&usart3_tx_pd8 &usart3_rx_pd9>;
 	pinctrl-names = "default";
 	current-speed = <115200>;
+};
+
+/* Wire -> i2c2 on header D18/D19 (PA8 SDA / PA9 SCL) */
+&i2c2 {
+	status = "okay";
+	pinctrl-0 = <&i2c2_scl_pa9 &i2c2_sda_pa8>;
+	pinctrl-names = "default";
+	clock-frequency = <100000>;
+};
+
+/* SPI -> spi4 on header D11/D12/D13 (PE6 MOSI / PE5 MISO / PE2 SCK) */
+&spi4 {
+	status = "okay";
+	pinctrl-0 = <&spi4_sck_pe2 &spi4_miso_pe5 &spi4_mosi_pe6>;
+	pinctrl-names = "default";
+};
+
+/*
+ * PWM for analogWrite(). Deferred-init + a dedicated "arduino" pinctrl state
+ * so the timers don't claim the pins at boot (they stay usable as digital
+ * pins until analogWrite() applies the "arduino" state) — same pattern as the
+ * upstream uno_q variant.
+ */
+&timers4 {
+	status = "okay";
+	st,prescaler = <4>;
+	pwm4: pwm {
+		status = "okay";
+		zephyr,deferred-init;
+		pinctrl-0 = <>;
+		pinctrl-1 = <>;
+		pinctrl-2 = <&tim4_ch1_pd12 &tim4_ch2_pd13 &tim4_ch3_pd14 &tim4_ch4_pd15>;
+		pinctrl-names = "default", "sleep", "arduino";
+	};
+};
+
+&timers8 {
+	status = "okay";
+	st,prescaler = <63>;
+	pwm8: pwm {
+		status = "okay";
+		zephyr,deferred-init;
+		pinctrl-0 = <>;
+		pinctrl-1 = <>;
+		pinctrl-2 = <&tim8_ch1_pc6 &tim8_ch2_pc7>;
+		pinctrl-names = "default", "sleep", "arduino";
+	};
 };
 
 / {
@@ -106,25 +155,49 @@
 		/*
 		 * Serial1 on the header UART (usart3 = arduino_serial), routed to
 		 * D0/D1 (PD9 RX / PD8 TX) — the classic Arduino UART pins.
-		 * I2C/SPI are left empty for this milestone; they need their own
-		 * pinctrl + device enable and come in the peripheral build-out.
+		 * Wire  -> i2c2 on D18/D19 (PA8 SDA / PA9 SCL).
+		 * SPI   -> spi4 on D11/D12/D13 (PE6 MOSI / PE5 MISO / PE2 SCK).
 		 */
 		serials = <&usart3>;
-		i2cs = <>;
-		spis = <>;
+		i2cs = <&i2c2>;
+		spis = <&spi4>;
 
 		/*
-		 * --- Next build-out stage (kept here as scaffolding) ---
-		 * ADC mapping is non-trivial on ARDEP: A0..A5 are spread across
-		 * adc1..adc4 (see arduino_r3_connector.dtsi). Wire io-channels +
-		 * adc-pin-gpios + enable &adcN once GPIO/serial blink is proven.
-		 *
-		 * io-channels = <&adc1 2>,  // A0 PA1  (adc1_in2)
-		 *               <&adc2 4>,  // A1 PA7  (adc2_in4)
-		 *               <&adc1 15>, // A2 PB0  (adc1_in15)
-		 *               <&adc3 5>,  // A3 PB13 (adc3_in5)
-		 *               <&adc1 5>,  // A4 PB14 (adc1_in5)
-		 *               <&adc4 3>;  // A5 PB12 (adc4_in3)
+		 * analogRead(A0..A5). The board's adc.dtsi already enables adc2/3/4
+		 * with these channels configured (gain/ref/acq/12-bit); we just wire
+		 * the consumer side. Order is A0..A5.
 		 */
+		io-channels = <&adc2 2>,   /* A0 PA1  - adc2_in2  */
+			      <&adc2 4>,   /* A1 PA7  - adc2_in4  */
+			      <&adc3 12>,  /* A2 PB0  - adc3_in12 */
+			      <&adc3 5>,   /* A3 PB13 - adc3_in5  */
+			      <&adc4 4>,   /* A4 PB14 - adc4_in4  */
+			      <&adc4 3>;   /* A5 PB12 - adc4_in3  */
+
+		adc-pin-gpios = <&gpioa 1  0>,  /* A0 PA1  */
+				<&gpioa 7  0>,  /* A1 PA7  */
+				<&gpiob 0  0>,  /* A2 PB0  */
+				<&gpiob 13 0>,  /* A3 PB13 */
+				<&gpiob 14 0>,  /* A4 PB14 */
+				<&gpiob 12 0>;  /* A5 PB12 */
+
+		/*
+		 * analogWrite(): PWM on D4-D7 (TIM4_CH1-4, PD12-15) and D8/D9
+		 * (TIM8_CH1/2, PC6/PC7). TIM3 is used by the board, so it's avoided.
+		 * pwm-pin-gpios and pwms are parallel lists indexed together.
+		 */
+		pwm-pin-gpios = <&gpiod 12 0>,  /* D4 PD12 */
+				<&gpiod 13 0>,  /* D5 PD13 */
+				<&gpiod 14 0>,  /* D6 PD14 */
+				<&gpiod 15 0>,  /* D7 PD15 */
+				<&gpioc 6  0>,  /* D8 PC6  */
+				<&gpioc 7  0>;  /* D9 PC7  */
+
+		pwms = <&pwm4 1 PWM_HZ(500) PWM_POLARITY_NORMAL>,  /* D4 TIM4_CH1 */
+		       <&pwm4 2 PWM_HZ(500) PWM_POLARITY_NORMAL>,  /* D5 TIM4_CH2 */
+		       <&pwm4 3 PWM_HZ(500) PWM_POLARITY_NORMAL>,  /* D6 TIM4_CH3 */
+		       <&pwm4 4 PWM_HZ(500) PWM_POLARITY_NORMAL>,  /* D7 TIM4_CH4 */
+		       <&pwm8 1 PWM_HZ(500) PWM_POLARITY_NORMAL>,  /* D8 TIM8_CH1 */
+		       <&pwm8 2 PWM_HZ(500) PWM_POLARITY_NORMAL>;  /* D9 TIM8_CH2 */
 	};
 };
