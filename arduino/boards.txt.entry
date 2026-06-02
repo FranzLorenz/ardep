@@ -1,0 +1,30 @@
+# Append this block to ArduinoCore-zephyr/boards.txt to expose ARDEP in the
+# Arduino IDE / arduino-cli board list. Modeled on the 'giga' entry.
+#
+# 'zephyr_target=ardep' is the Zephyr board target; 'variant' must match the
+# NORMALIZED_BOARD_TARGET (ardep_stm32g474xx). The ARDEP board + its modules
+# must be discoverable (see arduino/README.md, EXTRA_ZEPHYR_MODULES).
+
+ardep.name=Mercedes-Benz ARDEP
+ardep.build.board=ZEPHYR_ARDEP
+ardep.build.core=arduino
+ardep.build.crossprefix=arm-zephyr-eabi-
+ardep.build.compiler_path={runtime.tools.arm-zephyr-eabi-0.16.8.path}/bin/
+
+ardep.menu.debug.false=Standard
+ardep.menu.debug.true=Debug
+ardep.menu.debug.true.build.zsk_args.debug=-debug
+
+ardep.menu.link_mode.dynamic=Dynamic
+ardep.menu.link_mode.static=Static
+ardep.menu.link_mode.static.build.link_mode=static
+ardep.menu.link_mode.static.upload.extension=bin-zsk.bin
+
+ardep.build.zephyr_target=ardep
+ardep.build.zephyr_args=
+ardep.build.zephyr_hals=hal_stm32
+ardep.build.variant=ardep_stm32g474xx
+ardep.build.artifact=zephyr_main
+ardep.build.mcu=cortex-m4
+ardep.build.fpu=-mfpu=fpv4-sp-d16
+ardep.build.float-abi=-mfloat-abi=hard
