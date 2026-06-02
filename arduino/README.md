@@ -90,24 +90,41 @@ west build -p always -d build/ardep_stm32g474xx -b ardep loader -t llext-edk -- 
 
 The `-t llext-edk` target also produces the LLEXT EDK used to compile sketches.
 
-## Flashing the loader
+## Flashing (on-board Black Magic Probe, over USB-C)
 
-ARDEP has an onboard J-Link:
+ARDEP **v2's on-board debugger is a Black Magic Probe (BMP)**, reached over the
+same USB-C cable — no external probe. It enumerates as two serial ports; the
+lower-numbered one is the GDB server (e.g. `/dev/cu.usbmodemXXXX1`), the higher
+is the target UART. (The "Black Magic DFU" USB device is the probe's *own*
+firmware updater — don't flash that.) ARDEP v1 instead uses an external SWD
+probe; `flash/backup.jlink` is kept for J-Link-style probes.
+
+The verified flow (backup → loader → sketch → reset) is scripted:
 
 ```bash
-west flash -d build/ardep_stm32g474xx --runner jlink
-# or: JLinkExe -device STM32G474VE -if SWD -speed 4000
+arduino/flash/flash-bmp.sh /dev/cu.usbmodemXXXX1 \
+  build/ardep_stm32g474xx/zephyr/zephyr.elf \
+  <sketch>/build/arduino-git.zephyr.ardep/<sketch>.ino.elf-zsk.bin
 ```
+
+It reads the whole 512K flash to `~/ardep-flash-backup/backup.bin` first
+(anti-brick), flashes the loader, writes the sketch to `user_sketch`
+(`0x08050000`), and resets. BMP refuses raw `restore` to flash, so the sketch
+`.elf-zsk.bin` is converted to ihex and programmed with GDB `load`.
+
+> **Verified 2026-06-02 on real hardware:** loader + blink sketch flashed via
+> BMP, red LED (PC3) blinks at 1 Hz.
 
 ## Status
 
 - [x] ARDEP board compiles + links on the Arduino Zephyr fork (v4.2.0)
 - [x] `ardep_stm32g474xx` variant (overlay + conf) authored
 - [x] Loader firmware builds for ARDEP
-- [ ] Loader flashed + verified on real hardware
-- [ ] Blink sketch compiled as LLEXT, loaded, verified blinking
-- [ ] `boards.txt` entry wired for arduino-cli / IDE (see `boards.txt.entry`)
-- [ ] Sketch upload path (USB CDC vs. J-Link to `user_sketch`)
+- [x] Loader flashed + verified on real hardware (via on-board BMP, USB-C)
+- [x] Blink sketch compiled as LLEXT, loaded, **verified blinking (red LED, 1 Hz)**
+- [x] `boards.txt` entry wired for arduino-cli (`arduino-git:zephyr:ardep`)
+- [ ] IDE/CLI auto-upload recipe (`upload.address`/tool in boards.txt) — sketch
+      currently flashed via `flash/flash-bmp.sh`
 
 ## Next build-out (deliberately deferred)
 

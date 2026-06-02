@@ -68,19 +68,21 @@ mandatory comment-strip of EDK headers, symbol scripts, arduino cflags).
 
 ## Flashing (safe, USB-C only — no external probe)
 
-The ARDEP v2 on-board debugger is reached over the **same USB-C cable**.
+ARDEP **v2's on-board debugger is a Black Magic Probe (BMP)**, not a SEGGER
+J-Link. Over USB-C it shows up as two serial ports — the lower one is the GDB
+server (`/dev/cu.usbmodemXXXX1`), the higher is the target UART. The verified
+flow (backup → loader → sketch → reset) is scripted:
 
 ```bash
-# 1) BACK UP first (anti-brick): read out the whole 512K
-JLinkExe -device STM32G474VE -if SWD -speed 4000 -autoconnect 1 \
-  -CommanderScript arduino/flash/backup.jlink     # -> backup.bin
-
-# 2) Flash the loader (replaces ARDEP bootloader; restore from backup.bin if needed)
-west flash -d build/ardep_stm32g474xx --runner jlink
-
-# 3) Upload a sketch to user_sketch (0x08050000)
-arduino-cli upload -b arduino-git:zephyr:ardep -p <port> <sketch>
+arduino/flash/flash-bmp.sh /dev/cu.usbmodemXXXX1 \
+  build/ardep_stm32g474xx/zephyr/zephyr.elf \
+  <sketch>/build/arduino-git.zephyr.ardep/<sketch>.ino.elf-zsk.bin
 ```
+
+It backs up the full 512K to `~/ardep-flash-backup/backup.bin` first (anti-brick),
+flashes the loader, writes the sketch to `user_sketch` (`0x08050000`) as ihex via
+GDB `load` (BMP refuses raw flash `restore`), and resets. Restore hint is printed
+at the end. `flash/backup.jlink` is kept for v1 / external J-Link probes only.
 
 ## Current status (2026-06-02)
 
@@ -88,8 +90,9 @@ arduino-cli upload -b arduino-git:zephyr:ardep -p <port> <sketch>
 - ✅ `ardep_stm32g474xx` variant: GPIO + onboard LEDs + Serial1 (usart3 on D0/D1)
 - ✅ Loader builds: 169 KB flash (32%), RAM 91% (tight — trim for big sketches)
 - ✅ Blink sketch compiles end-to-end to a loadable LLEXT
-- ⏳ Flash + on-hardware blink verification (pending board hookup)
+- ✅ **Flashed + verified on real hardware via on-board BMP — red LED blinks at 1 Hz**
 - ⏳ Peripheral build-out: ADC (A0–A5 span adc1–4), PWM, I2C, SPI, CAN
+- ⏳ IDE/CLI auto-upload recipe (upload.address/tool in boards.txt)
 
 ## Layout
 
