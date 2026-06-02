@@ -33,9 +33,12 @@ export ARDEP_DIR
 ( cd "$CORE" && bash "$ARDEP_DIR/arduino/build-loader.sh" ) \
 	|| red "loader build failed"
 
-echo "== 3/3 Compile blink sketch =="
+echo "== 3/3 Compile example sketches =="
 command -v arduino-cli >/dev/null 2>&1 || red "arduino-cli not installed"
-arduino-cli compile -b "$FQBN" "$ARDEP_DIR/arduino/examples/blink" \
-	|| red "blink sketch failed to compile"
+for ex in blink peripherals; do
+	echo "   - $ex"
+	arduino-cli compile -b "$FQBN" "$ARDEP_DIR/arduino/examples/$ex" \
+		|| red "$ex sketch failed to compile"
+done
 
-printf '\033[32mGREEN: loader builds + blink sketch compiles\033[0m\n'
+printf '\033[32mGREEN: loader builds + example sketches compile\033[0m\n'
