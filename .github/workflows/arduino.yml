@@ -72,10 +72,11 @@ jobs:
           if [ ! -d "$WS/ArduinoCore-zephyr" ]; then
             git clone --depth 1 https://github.com/arduino/ArduinoCore-zephyr.git "$WS/ArduinoCore-zephyr"
             cd "$WS/ArduinoCore-zephyr"
-            ./extra/bootstrap.sh
+            # `yes` auto-accepts the blob license prompt west asks at the end of
+            # bootstrap (no TTY in CI -> would otherwise EOFError).
+            yes | ./extra/bootstrap.sh
             . venv/bin/activate
             pip install cryptography
-            west blobs fetch hal_stm32 || true
           fi
 
       - name: Fetch extra Zephyr modules
