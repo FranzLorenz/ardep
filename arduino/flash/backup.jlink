@@ -1,0 +1,10 @@
+// J-Link Commander script: back up the entire ARDEP flash (512K) before
+// flashing the Arduino loader. Restore with `loadbin backup.bin 0x08000000`.
+//   JLinkExe -device STM32G474VE -if SWD -speed 4000 -autoconnect 1 \
+//            -CommanderScript arduino/flash/backup.jlink
+si SWD
+speed 4000
+device STM32G474VE
+connect
+savebin backup.bin 0x08000000 0x80000
+exit
