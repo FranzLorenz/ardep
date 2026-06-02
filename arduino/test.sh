@@ -29,7 +29,8 @@ if command -v dtc >/dev/null 2>&1; then
 fi
 
 echo "== 2/3 Build loader =="
-( cd "$CORE" && ARDEP_DIR="$ARDEP_DIR" bash "$ARDEP_DIR/arduino/build-loader.sh" ) \
+export ARDEP_DIR
+( cd "$CORE" && bash "$ARDEP_DIR/arduino/build-loader.sh" ) \
 	|| red "loader build failed"
 
 echo "== 3/3 Compile blink sketch =="

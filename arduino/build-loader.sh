@@ -28,8 +28,10 @@ if [ ! -f platform.txt ]; then
 	exit 2
 fi
 
+# shellcheck disable=SC1091  # venv created at runtime, not available to linter
 source venv/bin/activate
-export ZEPHYR_BASE="$(west topdir)/zephyr"
+ZEPHYR_BASE="$(west topdir)/zephyr"
+export ZEPHYR_BASE
 
 BUILD_DIR="build/${VARIANT}"
 VARIANT_DIR="variants/${VARIANT}"
@@ -49,8 +51,8 @@ echo ">> Extracting LLEXT EDK into variant"
 rsync -a --delete "${BUILD_DIR}/llext-edk" "${VARIANT_DIR}/"
 
 echo ">> Stripping inline comments from EDK headers (needed for token pasting)"
-perl -i -pe 's/\s*\/\*.*?\*\///gs unless /^\s*#\s*(if|else|elif|endif)/ || (/^\s*\/\*/ && !/\\$/)' \
-	$(find "${VARIANT_DIR}/llext-edk/include/" -type f)
+find "${VARIANT_DIR}/llext-edk/include/" -type f -exec \
+	perl -i -pe 's/\s*\/\*.*?\*\///gs unless /^\s*#\s*(if|else|elif|endif)/ || (/^\s*\/\*/ && !/\\$/)' {} +
 
 echo ">> Copying loader firmwares"
 mkdir -p firmwares
