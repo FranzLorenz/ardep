@@ -30,6 +30,7 @@ Waypoints
    * `UDS Library documentation <https://mercedes-benz.github.io/ardep/lib/uds/README.html>`_
    * `Sample documentation <https://mercedes-benz.github.io/ardep/samples/>`_
    * `Sample sources <samples/>`_
+   * `Arduino support <arduino/>`_ - program ARDEP with the Arduino IDE/CLI
 
 * **Project**
    * `Contributing guidelines <CONTRIBUTING.md>`_
