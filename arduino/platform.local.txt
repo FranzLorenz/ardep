@@ -1,0 +1,12 @@
+# ARDEP: custom upload tool for the on-board Black Magic Probe.
+#
+# Copy this into the ArduinoCore-zephyr core root (alongside platform.txt),
+# together with bmp-upload.sh, so `arduino-cli upload -b arduino-git:zephyr:ardep
+# -p <gdb-port>` and the Arduino IDE "Upload" button flash the sketch to the
+# ARDEP user_sketch partition via the on-board BMP.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+tools.bmp.upload.params.verbose=
+tools.bmp.upload.params.quiet=
+tools.bmp.upload.pattern=bash "{runtime.platform.path}/bmp-upload.sh" "{serial.port}" "{build.path}/{build.project_name}.{upload.extension}" {upload.address}

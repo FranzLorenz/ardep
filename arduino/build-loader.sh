@@ -42,6 +42,11 @@ cp "${ARDEP_DIR}/arduino/variant/ardep.overlay" "${VARIANT_DIR}/${VARIANT}.overl
 cp "${ARDEP_DIR}/arduino/variant/ardep.conf"    "${VARIANT_DIR}/${VARIANT}.conf"
 cp "${ARDEP_DIR}/arduino/variant/variant.h"     "${VARIANT_DIR}/variant.h"
 
+echo ">> Installing BMP upload tool (platform.local.txt + bmp-upload.sh)"
+cp "${ARDEP_DIR}/arduino/platform.local.txt" platform.local.txt
+cp "${ARDEP_DIR}/arduino/flash/bmp-upload.sh" bmp-upload.sh
+chmod +x bmp-upload.sh
+
 echo ">> Building loader for ${BOARD} (variant ${VARIANT})"
 west build -p always -d "${BUILD_DIR}" -b "${BOARD}" loader -t llext-edk -- \
 	-DZEPHYR_EXTRA_MODULES="${EM}" -DBOARD_ROOT="${ARDEP_DIR}"

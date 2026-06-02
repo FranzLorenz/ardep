@@ -115,6 +115,20 @@ It reads the whole 512K flash to `~/ardep-flash-backup/backup.bin` first
 > **Verified 2026-06-02 on real hardware:** loader + blink sketch flashed via
 > BMP, red LED (PC3) blinks at 1 Hz.
 
+### Upload from arduino-cli / the IDE "Upload" button
+
+A custom `bmp` upload tool (`platform.local.txt` + `bmp-upload.sh`, installed
+into the core by `build-loader.sh`) lets you upload sketches normally — pick
+the BMP **GDB serial port** (the lower `/dev/cu.usbmodemXXXX1`) as the port:
+
+```bash
+arduino-cli upload -b arduino-git:zephyr:ardep -p /dev/cu.usbmodemXXXX1 <sketch>
+```
+
+In the Arduino IDE: select board "Mercedes-Benz ARDEP", select that serial port,
+hit Upload. The tool converts the sketch to ihex, programs `user_sketch` via
+GDB `load` over the BMP, and resets.
+
 ## Status
 
 - [x] ARDEP board compiles + links on the Arduino Zephyr fork (v4.2.0)
@@ -126,8 +140,8 @@ It reads the whole 512K flash to `~/ardep-flash-backup/backup.bin` first
 - [x] Peripherals: **Wire (I2C2, D18/D19), SPI (spi4, D11–13), analogRead
       (A0–A5), analogWrite/PWM (D4–D9), Serial (usart3, D0/D1)** — compile green
       and boot without fault on hardware (peripherals example blinks in 3-bursts)
-- [ ] IDE/CLI auto-upload recipe (`upload.address`/tool in boards.txt) — sketch
-      currently flashed via `flash/flash-bmp.sh`
+- [x] **IDE/CLI auto-upload** via BMP — `arduino-cli upload` and the Arduino IDE
+      "Upload" button flash the sketch to `user_sketch` and reset (verified on hw)
 
 ### Peripheral pin map
 

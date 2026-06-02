@@ -28,3 +28,17 @@ ardep.build.artifact=zephyr_main
 ardep.build.mcu=cortex-m4
 ardep.build.fpu=-mfpu=fpv4-sp-d16
 ardep.build.float-abi=-mfloat-abi=hard
+
+# Upload to the user_sketch partition via the on-board Black Magic Probe.
+# Needs platform.local.txt + bmp-upload.sh in the core root (see arduino/README.md).
+# Select the BMP GDB serial port (/dev/cu.usbmodemXXXX1) as the upload port.
+ardep.upload.tool=bmp
+ardep.upload.tool.default=bmp
+ardep.upload.tool.serial=bmp
+ardep.upload.address=0x08050000
+ardep.upload.protocol=
+ardep.upload.use_1200bps_touch=false
+ardep.upload.wait_for_upload_port=false
+ardep.upload.native_usb=true
+ardep.upload.maximum_size=163840
+ardep.upload.maximum_data_size=131072
