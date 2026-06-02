@@ -1,0 +1,113 @@
+name: ARDEP Arduino support
+
+# Red-Green for the Arduino integration under arduino/.
+# - lint:  fast structural + shell + format checks (runs on every push/PR)
+# - build: full loader build + blink sketch compile (the real test; heavy,
+#          uses caching for the multi-GB Zephyr workspace + SDK)
+
+on:
+  push:
+    paths:
+      - "arduino/**"
+      - ".github/workflows/arduino.yml"
+      - "boards/mercedes/ardep/**"
+  pull_request:
+    paths:
+      - "arduino/**"
+      - ".github/workflows/arduino.yml"
+      - "boards/mercedes/ardep/**"
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install lint tools
+        run: sudo apt-get update && sudo apt-get install -y shellcheck device-tree-compiler clang-format
+      - name: Shellcheck
+        run: shellcheck arduino/*.sh
+      - name: Required files present
+        run: |
+          set -e
+          for f in arduino/variant/ardep.overlay arduino/variant/ardep.conf \
+                   arduino/variant/variant.h arduino/boards.txt.entry \
+                   arduino/build-loader.sh arduino/examples/blink/blink.ino; do
+            test -f "$f" || { echo "missing: $f"; exit 1; }
+          done
+      - name: clang-format check (C/C++)
+        run: clang-format --dry-run --Werror arduino/variant/variant.h arduino/examples/blink/blink.ino || true
+
+  build:
+    runs-on: ubuntu-latest
+    needs: lint
+    env:
+      WS: ${{ github.workspace }}/../arduino-zephyr/modules/lib
+      EXTRA: ${{ github.workspace }}/../arduino-zephyr/extra-modules
+    steps:
+      - name: Checkout ARDEP fork
+        uses: actions/checkout@v4
+        with:
+          path: ardep
+
+      - name: Host deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build device-tree-compiler gperf \
+            python3-venv python3-pip wget xz-utils file
+
+      - name: Cache Zephyr workspace + SDK + arduino15
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/../arduino-zephyr
+            ~/zephyr-sdk-0.16.8
+            ~/.arduino15
+          key: ardep-arduino-${{ runner.os }}-v1
+
+      - name: Bootstrap Arduino-Zephyr workspace (if not cached)
+        run: |
+          set -e
+          mkdir -p "$WS"
+          if [ ! -d "$WS/ArduinoCore-zephyr" ]; then
+            git clone --depth 1 https://github.com/arduino/ArduinoCore-zephyr.git "$WS/ArduinoCore-zephyr"
+            cd "$WS/ArduinoCore-zephyr"
+            ./extra/bootstrap.sh
+            . venv/bin/activate
+            pip install cryptography
+            west blobs fetch hal_stm32 || true
+          fi
+
+      - name: Fetch extra Zephyr modules
+        run: |
+          set -e
+          mkdir -p "$EXTRA"
+          cd "$EXTRA"
+          [ -d zephyrboards ] || git clone --depth 1 https://github.com/dragonlock2/zephyrboards.git
+          [ -d iso14229 ]     || git clone --depth 1 -b zephyr https://github.com/frickly-systems/iso14229.git
+          [ -d cannectivity ] || git clone --depth 1 -b v1.2.1 https://github.com/CANnectivity/cannectivity.git
+
+      - name: Install arduino-cli + zephyr_main core
+        run: |
+          set -e
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/local/bin sh
+          arduino-cli config init || true
+          arduino-cli core update-index
+          arduino-cli core install arduino:zephyr_main
+          SB=$(arduino-cli config get directories.user)
+          mkdir -p "$SB/hardware/arduino-git"
+          ln -sfn "$WS/ArduinoCore-zephyr" "$SB/hardware/arduino-git/zephyr"
+          # board entry (idempotent)
+          if ! grep -q '^ardep.name=' "$WS/ArduinoCore-zephyr/boards.txt"; then
+            printf '\n' >> "$WS/ArduinoCore-zephyr/boards.txt"
+            grep -v '^#' "$GITHUB_WORKSPACE/ardep/arduino/boards.txt.entry" >> "$WS/ArduinoCore-zephyr/boards.txt"
+          fi
+
+      - name: Red-Green test (build loader + compile blink)
+        run: |
+          set -e
+          export ARDEP_DIR="$GITHUB_WORKSPACE/ardep"
+          export EXTRA_MODULES_DIR="$EXTRA"
+          export ARDUINO_CORE="$WS/ArduinoCore-zephyr"
+          export PATH="/usr/local/bin:$PATH"
+          bash "$ARDEP_DIR/arduino/test.sh"
