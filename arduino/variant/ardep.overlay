@@ -1,0 +1,130 @@
+/*
+ * Arduino Core for Zephyr - board variant overlay for the ARDEP board.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Physical Arduino-R3-header pin mapping for the Mercedes-Benz ARDEP
+ * (STM32G474VE). The pin assignments mirror the board's own
+ * boards/mercedes/ardep/arduino_r3_connector.dtsi so that Arduino digital/
+ * analog pin numbers line up with the silkscreen.
+ *
+ * Flash layout: the Arduino loader owns the whole 512K flash as a standalone
+ * firmware, decoupled from ARDEP's automotive MCUboot+UDS/DFU scheme (which
+ * reserves mcuboot/slot0/slot1 for OTA swap and would force slot1 to exist for
+ * image signing). For the Arduino flow we don't need OTA, so we replace the
+ * stock partition map with: code (loader) / user_sketch / storage, and disable
+ * CONFIG_BOOTLOADER_MCUBOOT in ardep.conf so the loader links at flash base.
+ */
+
+/delete-node/ &boot_partition;
+/delete-node/ &slot0_partition;
+/delete-node/ &slot1_partition;
+/delete-node/ &storage_partition;
+
+&flash0 {
+	partitions {
+		code_partition: partition@0 {
+			label = "code";
+			reg = <0x00000000 DT_SIZE_K(320)>;
+		};
+		user_sketch: partition@50000 {
+			label = "user_sketch";
+			reg = <0x00050000 DT_SIZE_K(160)>;
+		};
+		storage_partition: partition@78000 {
+			label = "storage";
+			reg = <0x00078000 DT_SIZE_K(32)>;
+		};
+	};
+};
+
+/ {
+	chosen {
+		zephyr,code-partition = &code_partition;
+	};
+};
+
+/* Header UART (arduino_serial) -> Arduino Serial1 on D0/D1 (PD9 RX / PD8 TX) */
+&usart3 {
+	status = "okay";
+	pinctrl-0 = <&usart3_tx_pd8 &usart3_rx_pd9>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+};
+
+/ {
+	zephyr,user {
+		/*
+		 * digital-pin-gpios is indexed by Arduino digital pin number.
+		 * D0..D13 are the header digital pins; A0..A5 are appended as
+		 * D14..D19 (Arduino convention). D18/D19 (PA8/PA9) follow.
+		 */
+		digital-pin-gpios =
+			<&gpiod 9  GPIO_ACTIVE_HIGH>,  /* D0  - PD9  */
+			<&gpiod 8  GPIO_ACTIVE_HIGH>,  /* D1  - PD8  */
+			<&gpiod 10 GPIO_ACTIVE_HIGH>,  /* D2  - PD10 */
+			<&gpiod 11 GPIO_ACTIVE_HIGH>,  /* D3  - PD11 */
+			<&gpiod 12 GPIO_ACTIVE_HIGH>,  /* D4  - PD12 */
+			<&gpiod 13 GPIO_ACTIVE_HIGH>,  /* D5  - PD13 */
+			<&gpiod 14 GPIO_ACTIVE_HIGH>,  /* D6  - PD14 */
+			<&gpiod 15 GPIO_ACTIVE_HIGH>,  /* D7  - PD15 */
+			<&gpioc 6  GPIO_ACTIVE_HIGH>,  /* D8  - PC6  */
+			<&gpioc 7  GPIO_ACTIVE_HIGH>,  /* D9  - PC7  */
+			<&gpioe 3  GPIO_ACTIVE_HIGH>,  /* D10 - PE3  */
+			<&gpioe 6  GPIO_ACTIVE_HIGH>,  /* D11 - PE6  */
+			<&gpioe 5  GPIO_ACTIVE_HIGH>,  /* D12 - PE5  */
+			<&gpioe 2  GPIO_ACTIVE_HIGH>,  /* D13 - PE2  */
+
+			/* Analog pins, exposed as digital D14..D19 */
+			<&gpioa 1  GPIO_ACTIVE_HIGH>,  /* A0/D14 - PA1  */
+			<&gpioa 7  GPIO_ACTIVE_HIGH>,  /* A1/D15 - PA7  */
+			<&gpiob 0  GPIO_ACTIVE_HIGH>,  /* A2/D16 - PB0  */
+			<&gpiob 13 GPIO_ACTIVE_HIGH>,  /* A3/D17 - PB13 */
+			<&gpiob 14 GPIO_ACTIVE_HIGH>,  /* A4/D18 - PB14 */
+			<&gpiob 12 GPIO_ACTIVE_HIGH>,  /* A5/D19 - PB12 */
+
+			<&gpioa 8  GPIO_ACTIVE_HIGH>,  /* D20 - PA8 (header D18) */
+			<&gpioa 9  GPIO_ACTIVE_HIGH>,  /* D21 - PA9 (header D19) */
+
+			/*
+			 * Onboard LEDs as digital pins. The core derives
+			 * LED_BUILTIN by matching builtin-led-gpios[0] against this
+			 * list, so the LED pins must appear here. Active-low so
+			 * digitalWrite(LED_BUILTIN, HIGH) lights the LED.
+			 */
+			<&gpioc 3  GPIO_ACTIVE_LOW>,   /* D22 - PC3 red (LED_BUILTIN) */
+			<&gpioa 3  GPIO_ACTIVE_LOW>;   /* D23 - PA3 green */
+
+		/*
+		 * Onboard LEDs (active-low on ARDEP). LED_BUILTIN -> index 0
+		 * (red). Matches boards/mercedes/ardep led0 = &red_led.
+		 */
+		builtin-led-gpios =
+			<&gpioc 3 GPIO_ACTIVE_LOW>,    /* red   - PC3 */
+			<&gpioa 3 GPIO_ACTIVE_LOW>;    /* green - PA3 */
+
+		/*
+		 * Serial1 on the header UART (usart3 = arduino_serial), routed to
+		 * D0/D1 (PD9 RX / PD8 TX) — the classic Arduino UART pins.
+		 * I2C/SPI are left empty for this milestone; they need their own
+		 * pinctrl + device enable and come in the peripheral build-out.
+		 */
+		serials = <&usart3>;
+		i2cs = <>;
+		spis = <>;
+
+		/*
+		 * --- Next build-out stage (kept here as scaffolding) ---
+		 * ADC mapping is non-trivial on ARDEP: A0..A5 are spread across
+		 * adc1..adc4 (see arduino_r3_connector.dtsi). Wire io-channels +
+		 * adc-pin-gpios + enable &adcN once GPIO/serial blink is proven.
+		 *
+		 * io-channels = <&adc1 2>,  // A0 PA1  (adc1_in2)
+		 *               <&adc2 4>,  // A1 PA7  (adc2_in4)
+		 *               <&adc1 15>, // A2 PB0  (adc1_in15)
+		 *               <&adc3 5>,  // A3 PB13 (adc3_in5)
+		 *               <&adc1 5>,  // A4 PB14 (adc1_in5)
+		 *               <&adc4 3>;  // A5 PB12 (adc4_in3)
+		 */
+	};
+};
