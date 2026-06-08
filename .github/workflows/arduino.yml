@@ -67,14 +67,17 @@ jobs:
             ${{ github.workspace }}/../arduino-zephyr
             ~/zephyr-sdk-0.16.8
             ~/.arduino15
-          key: ardep-arduino-${{ runner.os }}-v1
+          key: ardep-arduino-${{ runner.os }}-v2
 
       - name: Bootstrap Arduino-Zephyr workspace (if not cached)
         run: |
           set -e
           mkdir -p "$WS"
           if [ ! -d "$WS/ArduinoCore-zephyr" ]; then
-            git clone --depth 1 https://github.com/arduino/ArduinoCore-zephyr.git "$WS/ArduinoCore-zephyr"
+            git clone https://github.com/arduino/ArduinoCore-zephyr.git "$WS/ArduinoCore-zephyr"
+            # Pin to the core revision this integration was verified against, so
+            # CI reproduces a known-good Zephyr/core combo (bump deliberately).
+            git -C "$WS/ArduinoCore-zephyr" checkout ef1d62d422a5058745ac2015695de43300b64bff
             cd "$WS/ArduinoCore-zephyr"
             # `yes` auto-accepts the blob license prompt west asks at the end of
             # bootstrap (no TTY in CI -> would otherwise EOFError).
@@ -88,7 +91,12 @@ jobs:
           set -e
           mkdir -p "$EXTRA"
           cd "$EXTRA"
-          [ -d zephyrboards ] || git clone --depth 1 https://github.com/dragonlock2/zephyrboards.git
+          # Pin to the exact revision ARDEP's west.yml uses (newer default
+          # branch adds a CH32 SoC that trips a Kconfig warning under -Werror).
+          if [ ! -d zephyrboards ]; then
+            git clone https://github.com/dragonlock2/zephyrboards.git
+            git -C zephyrboards checkout 9443ad0ebe547a140ec54790687ae8b4d4e0cd34
+          fi
           [ -d iso14229 ]     || git clone --depth 1 -b zephyr https://github.com/frickly-systems/iso14229.git
           [ -d cannectivity ] || git clone --depth 1 -b v1.2.1 https://github.com/CANnectivity/cannectivity.git
 
