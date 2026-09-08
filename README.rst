@@ -68,7 +68,12 @@ Key Features
 Hardware availability
 ===============
 
-Frickly Systems has started a Crowd Supply campaign to make the hardware available for purchase. You can subscribe and get notified when it launches at `crowdsupply.com/frickly-systems/ardep <https://www.crowdsupply.com/frickly-systems/ardep>`_.
+Frickly Systems has started a Crowd Supply campaign to make the hardware available for purchase. Subscribe to notified when it launches at:
+
+.. image:: https://img.shields.io/badge/CROWD%20SUPPLY-ARDEP-008E8E?style=for-the-badge&labelColor=1F1F1F
+   :target: https://www.crowdsupply.com/frickly-systems/ardep
+   :alt: Crowd Supply campaign
+   :align: center
 
 Getting Started
 ===============
