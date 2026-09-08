@@ -68,7 +68,7 @@ Key Features
 Hardware availability
 ===============
 
-ARDEP is not yet commercially available. Frickly Systems has started a Crowd Supply campaign. You can subscribe and get notified when it launches at `crowdsupply.com/frickly-systems/ardep <https://www.crowdsupply.com/frickly-systems/ardep>`_.
+Frickly Systems has started a Crowd Supply campaign to make the hardware available for purchase. You can subscribe and get notified when it launches at `crowdsupply.com/frickly-systems/ardep <https://www.crowdsupply.com/frickly-systems/ardep>`_.
 
 Getting Started
 ===============
